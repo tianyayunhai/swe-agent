@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../env/">
+        <link rel="prev" href="../docker/">
       
       
-        <link rel="next" href="../summarizers/">
+        <link rel="next" href="../../dev/contribute/">
       
       
       <link rel="icon" href="../../assets/swe-agent.svg">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Docker images - SWE-agent documentation</title>
+        <title>Summarizers - SWE-agent documentation</title>
       
     
     
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#build-your-own-agent-docker-image" class="md-skip">
+        <a href="#summarizers-configuration" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Docker images
+              Summarizers
             
           </span>
         </div>
@@ -1011,6 +1011,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker images
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1027,33 +1048,12 @@
         
   
   <span class="md-ellipsis">
-    Docker images
-  </span>
-  
-
-      </a>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../summarizers/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
     Summarizers
   </span>
   
 
       </a>
+      
     </li>
   
 
@@ -1359,7 +1359,7 @@
                   
 
   
-    <a href="https://github.com/princeton-nlp/SWE-agent/edit/main/docs/config/docker.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/princeton-nlp/SWE-agent/edit/main/docs/config/summarizers.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
     </a>
@@ -1367,74 +1367,31 @@
   
 
 
-<h1 id="build-your-own-agent-docker-image">Build your own agent Docker image</h1>
-<p>This section is about modifying the Docker image in which we run the commands suggested by the agent.</p>
-<p>There are two reasons to build your own Docker image</p>
-<ol>
-<li>You need a very specific environment to install your package (anything that you cannot simply install inside of a conda environment)</li>
-<li>You want to pre-install your package for <a href="../../usage/cl_tutorial/#speedup">speedup</a>.</li>
-</ol>
-<p>There are three steps involved:</p>
-<ol>
-<li>Modify the <a href="https://github.com/princeton-nlp/SWE-agent/blob/main/docker/swe.Dockerfile"><code>swe.Dockerfile</code> Dockerfile</a> (also shown below).
-   We provide some extended explanation of the Dockerfile <a href="https://github.com/princeton-nlp/SWE-agent/blob/main/docker/README.md">here</a>.</li>
-<li>Build the image. One way is to simply run <code>./setup.sh</code>. Alternatively, especially if you want to change the default tag (<code>sweagent/swe-agent:latest</code>), run
-   <div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;YOUR TAG HERE&quot;</span><span class="w"> </span>-f<span class="w"> </span>docker/swe.Dockerfile<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">TARGETARCH</span><span class="o">=</span><span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span><span class="w"> </span>.
-</code></pre></div></li>
-<li>Make sure you use the new image by passing the <code>--image_name</code> flag to <code>run.py</code>.</li>
-</ol>
-<p>Default Dockerfile:</p>
-<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">ubuntu:jammy</span>
-
-<span class="k">ARG</span><span class="w"> </span>TARGETARCH
-
-<span class="c"># Install third party tools</span>
-<span class="k">RUN</span><span class="w"> </span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>bash<span class="w"> </span>gcc<span class="w"> </span>git<span class="w"> </span>jq<span class="w"> </span>wget<span class="w"> </span>g++<span class="w"> </span>make<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>apt-get<span class="w"> </span>clean<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>rm<span class="w"> </span>-rf<span class="w"> </span>/var/lib/apt/lists/*
-
-<span class="c"># Initialize git</span>
-<span class="k">RUN</span><span class="w"> </span>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.email<span class="w"> </span><span class="s2">&quot;sweagent@pnlp.org&quot;</span>
-<span class="k">RUN</span><span class="w"> </span>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;sweagent&quot;</span>
-
-<span class="c"># Environment variables</span>
-<span class="k">ENV</span><span class="w"> </span><span class="nv">ROOT</span><span class="o">=</span><span class="s1">&#39;/dev/&#39;</span>
-<span class="k">RUN</span><span class="w"> </span>prompt<span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot; &gt; &quot;</span><span class="p">;</span><span class="w"> </span><span class="o">}</span><span class="p">;</span>
-<span class="k">ENV</span><span class="w"> </span><span class="nv">PS1</span><span class="o">=</span><span class="s2">&quot;&gt; &quot;</span>
-
-<span class="c"># Create file for tracking edits, test patch</span>
-<span class="k">RUN</span><span class="w"> </span>touch<span class="w"> </span>/root/files_to_edit.txt
-<span class="k">RUN</span><span class="w"> </span>touch<span class="w"> </span>/root/test.patch
-
-<span class="c"># add ls file indicator</span>
-<span class="k">RUN</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;alias ls=&#39;ls -F&#39;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/root/.bashrc
-
-<span class="c"># Install miniconda</span>
-<span class="k">ENV</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/root/miniconda3/bin:</span><span class="si">${</span><span class="nv">PATH</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="k">ARG</span><span class="w"> </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/root/miniconda3/bin:</span><span class="si">${</span><span class="nv">PATH</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="k">COPY</span><span class="w"> </span>docker/getconda.sh<span class="w"> </span>.
-<span class="k">RUN</span><span class="w"> </span>bash<span class="w"> </span>getconda.sh<span class="w"> </span><span class="si">${</span><span class="nv">TARGETARCH</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>rm<span class="w"> </span>getconda.sh<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>/root/.conda<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>miniconda.sh<span class="w"> </span>-b<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>miniconda.sh
-<span class="k">RUN</span><span class="w"> </span>conda<span class="w"> </span>--version<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>conda<span class="w"> </span>init<span class="w"> </span>bash<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="o">&amp;&amp;</span><span class="w"> </span>conda<span class="w"> </span>config<span class="w"> </span>--append<span class="w"> </span>channels<span class="w"> </span>conda-forge
-
-<span class="c"># Cache python versions</span>
-<span class="k">RUN</span><span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>-n<span class="w"> </span>python3.9<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9
-<span class="k">RUN</span><span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>-n<span class="w"> </span>python3.10<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
-
-<span class="c"># Install python packages</span>
-<span class="k">COPY</span><span class="w"> </span>docker/requirements.txt<span class="w"> </span>/root/requirements.txt
-<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>/root/requirements.txt
-
-<span class="k">WORKDIR</span><span class="w"> </span><span class="s">/</span>
-
-<span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/bin/bash&quot;</span><span class="p">]</span>
+<h1 id="summarizers-configuration">Summarizers Configuration</h1>
+<p>LMs perform best if given concise inputs; superfluous context can degrade performance while increasing costs. Because agents require LMs to process entire trajectories, compressing context is of particular importance.</p>
+<p>We designed two summarizers to handle long output commands. The first, a <strong><em>simple summarizer</em></strong>, saves the command output to a file if it exceeds a certain configurable line count. We show an indicative warning to the agent and tell it to open the saved command output using the built-in SWE-agent utility <code>open</code>.</p>
+<p>The second, an <strong><em>LM summarizer</em></strong>, integrates with the main agent to enhance its problem-solving efficacy and avoid exceeding input length limitations. It employs the same model (though can be configured differently) as the main agent; it receives a configurable prompt containing some context about the problem, the most recent action taken by the main agent, and any observations from that action exceeding a configurable line count threshold. The LM summarizer then generates a concise summary of the observation that is directly relevant to the ongoing problem. This summary is sent to the main agent, accompanied by a warning message indicating that the command output was summarized due to exceeding the line count limit.</p>
+<p>The summarizer configuration is defined within the main <a href="../config/">configuration</a> <code>.yaml</code> file, and has the following structure:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">summarizer_config</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">function</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Reference to functionality of the summarizer. Can be one of SimpleSummarizer, LMSummarizer or Identity</span>
+<span class="w">  </span><span class="nt">window_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Threshold of the line count limit. Observation output exceeding these number, will be summarized.</span>
+<span class="w">  </span><span class="nt">system_template</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|-</span>
+<span class="w">    </span><span class="no">First `system` message shown to the LMSummarizer.</span>
+<span class="w">    </span><span class="no">This has no effect in other summarizer functionalities.</span>
+<span class="w">  </span><span class="nt">instance_template</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|-</span>
+<span class="w">    </span><span class="no">Instance prompt, contains task instance-specific content,</span>
+<span class="w">    </span><span class="no">the most recent action taken by the main agent,</span>
+<span class="w">    </span><span class="no">and any observations from that action exceeding the line count threshold.</span>
+<span class="w">    </span><span class="no">This has effect only for the LM Summarizer functionality.</span>
+<span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">Optional configuration of a different model</span><span class="p p-Indicator">,</span>
+<span class="w">  </span><span class="nv">if not configured the same model as the main agent model will be used.</span>
+<span class="w">  </span><span class="nv">This has effect only for the LM Summarizer functionality.</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name of the model to use</span>
+<span class="w">    </span><span class="nt">per_instance_cost_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Cost limit for every instance (task)</span>
+<span class="w">    </span><span class="nt">total_cost_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Total cost limit for summarizer only</span>
+<span class="w">    </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Sampling temperature</span>
+<span class="w">    </span><span class="nt">top_p</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Sampling top-p</span>
+<span class="w">    </span><span class="nt">host_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Host URL when using Ollama model</span>
 </code></pre></div>
 
 
@@ -1465,7 +1422,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../env/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Environment variables">
+          <a href="../docker/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Docker images">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1475,20 +1432,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Environment variables
+                Docker images
               </div>
             </div>
           </a>
         
         
           
-          <a href="../summarizers/" class="md-footer__link md-footer__link--next" aria-label="Next: Summarizers">
+          <a href="../../dev/contribute/" class="md-footer__link md-footer__link--next" aria-label="Next: Contribution guide">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Summarizers
+                Contribution guide
               </div>
             </div>
             <div class="md-footer__button md-icon">
